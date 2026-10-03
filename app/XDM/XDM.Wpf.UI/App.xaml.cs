@@ -29,7 +29,14 @@ namespace XDM.Wpf.UI
 
         public App()
         {
-            ServicePointManager.ServerCertificateValidationCallback += (a, b, c, d) => true;
+            // Certificates are validated by default. Only bypass validation when the user
+            // explicitly opts in via XDM_ALLOW_INSECURE_SSL=1 (e.g. TLS-intercepting proxy).
+            // This is the effective bypass for the .NET Framework build, because
+            // NetFxHttpClient uses HttpWebRequest, which honours this callback.
+            if (PlatformHelper.AllowInsecureSsl)
+            {
+                ServicePointManager.ServerCertificateValidationCallback += (a, b, c, d) => true;
+            }
             ServicePointManager.DefaultConnectionLimit = 100;
 
 #if NET45_OR_GREATER

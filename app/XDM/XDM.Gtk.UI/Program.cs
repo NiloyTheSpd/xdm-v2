@@ -73,7 +73,12 @@ namespace XDM.GtkUI
             //                                  ");
             //Gtk.StyleContext.AddProviderForScreen(screen, provider, 800);
 
-            ServicePointManager.ServerCertificateValidationCallback += (a, b, c, d) => true;
+            // Certificates are validated by default. Only bypass validation when the user
+            // explicitly opts in via XDM_ALLOW_INSECURE_SSL=1 (e.g. TLS-intercepting proxy).
+            if (PlatformHelper.AllowInsecureSsl)
+            {
+                ServicePointManager.ServerCertificateValidationCallback += (a, b, c, d) => true;
+            }
             ServicePointManager.DefaultConnectionLimit = 100;
 
             ServicePointManager.SecurityProtocol = SecurityProtocolType.SystemDefault;

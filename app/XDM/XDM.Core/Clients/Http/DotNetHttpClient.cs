@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading;
 using TraceLog;
 using XDM.Core;
+using XDM.Core.Util;
 
 namespace XDM.Core.Clients.Http
 {
@@ -52,9 +53,16 @@ namespace XDM.Core.Clients.Http
                         AutomaticDecompression = DecompressionMethods.All,
                         PreAuthenticate = true,
                         UseDefaultCredentials = true,
-                        MaxConnectionsPerServer = 100,
-                        ServerCertificateCustomValidationCallback = (a, b, c, d) => true
+                        MaxConnectionsPerServer = 100
                     };
+
+                    // Do NOT blanket-trust certificates here: this is the handler used
+                    // for all download traffic on .NET 5+. Trust is only bypassed when the
+                    // user explicitly opts in via XDM_ALLOW_INSECURE_SSL=1.
+                    if (PlatformHelper.AllowInsecureSsl)
+                    {
+                        handler.ServerCertificateCustomValidationCallback = (a, b, c, d) => true;
+                    }
 
                     var p = ProxyHelper.GetProxy(this.proxy);
                     if (p != null)
