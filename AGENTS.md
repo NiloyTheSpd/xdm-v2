@@ -289,6 +289,36 @@ translations; it is not part of the .NET build.
 - UI-thread marshalling goes through `Application.RunOnUiThread` /
   `IApplicationWindow.RunOnUIThread`; download callbacks arrive on background threads.
 
+## Language-aware tooling (LSP status)
+
+OpenCode V2 (2.0.22) has **no LSP runtime** — the `lsp` config is accepted but starts
+nothing (per official V2 docs). So there is no go-to-definition/diagnostics inside
+OpenCode sessions; `dotnet build` output is the typechecker.
+
+- `csharp-ls` 0.28.0 is installed (`~/.dotnet/tools/csharp-ls`, needs `~/.dotnet/tools`
+  on PATH). It serves this repo when `DOTNET_ROOT` points at a real SDK
+  (`/home/thespd/.local/share/mise/dotnet-root`) — without it, MSBuildLocator finds no
+  SDK and `initialize` returns empty capabilities. Verified: full capability set,
+  solution loads, push diagnostics work on file open.
+- `.opencode/opencode.jsonc` declares the `csharp` server (command + `.cs`/`.csx` +
+  `DOTNET_ROOT`) so it activates automatically if/when a V2 runtime lands.
+- Caveat: solution load is slow (minutes) and `net4.7.2` projects degrade (reference
+  assemblies unavailable on Linux — warnings, not fatal).
+
+## OpenCode workflow (`.opencode/`)
+
+- Config: `.opencode/opencode.jsonc` (highest precedence; overrides root/global).
+- Skills (`.opencode/skills/*/SKILL.md`, loaded via the `skill` tool):
+  `xdm-issue-investigation`, `xdm-regression-testing`, `xdm-build-debugging`,
+  `xdm-code-review`, `xdm-release-validation`.
+- Subagents (`.opencode/agents/*.md`, `mode: subagent`):
+  `issue-researcher` → `code-architect` → `bug-fixer` → `regression-reviewer`,
+  plus `security-reviewer` / `performance-reviewer` for relevant changes.
+  Invoke only the ones the task needs; none share state with the parent.
+- No public skills vendored: the XDM-specific skills above cover these workflows, and
+  third-party prompt packs would duplicate them. Revisit if a maintained upstream
+  debugging/testing skill clearly exceeds them.
+
 ## Repo state
 
 This is our own fork/derivative of `subhra74/xdm`, worked on in place — improvements are

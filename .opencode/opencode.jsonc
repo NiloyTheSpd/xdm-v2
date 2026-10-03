@@ -1,0 +1,12 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "lsp": {
+    "csharp": {
+      "command": ["csharp-ls", "--loglevel", "info"],
+      "extensions": [".cs", ".csx"],
+      "env": {
+        "DOTNET_ROOT": "/home/thespd/.local/share/mise/dotnet-root"
+      }
+    }
+  }
+}
