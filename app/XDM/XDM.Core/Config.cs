@@ -154,6 +154,54 @@ namespace XDM.Core
         public string DefaultDownloadFolder { get; set; } =
             PlatformHelper.GetOsDefaultDownloadFolder();
 
+        /// <summary>
+        /// Changes the default download folder and re-bases the predefined
+        /// category folders (Documents/Music/Video/Compressed/Programs) under it,
+        /// so files keep landing where the user chose. A predefined category is
+        /// only re-based when its folder still lives under the previous default —
+        /// independently customized category folders are left alone.
+        /// </summary>
+        public static void UpdateDefaultDownloadFolder(string folder)
+        {
+            if (string.IsNullOrWhiteSpace(folder))
+            {
+                return;
+            }
+            var old = Instance.DefaultDownloadFolder;
+            Instance.DefaultDownloadFolder = folder;
+            if (string.IsNullOrEmpty(old))
+            {
+                return;
+            }
+            // Note: Category is a struct, so mutate via indexed write-back.
+            var oldRoot = old.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+                + Path.DirectorySeparatorChar;
+            var list = Instance.Categories.ToList();
+            for (int i = 0; i < list.Count; i++)
+            {
+                var cat = list[i];
+                if (!cat.IsPredefined)
+                {
+                    continue;
+                }
+                // Boundary-aware prefix match: a plain StartsWith would also match
+                // a sibling like "<old>-2" and flatten nested folders.
+                if (string.IsNullOrEmpty(cat.DefaultFolder) ||
+                    !cat.DefaultFolder.StartsWith(oldRoot, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+                var leaf = Path.GetFileName(cat.DefaultFolder.TrimEnd(
+                    Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
+                if (!string.IsNullOrEmpty(leaf))
+                {
+                    cat.DefaultFolder = Path.Combine(folder, leaf);
+                    list[i] = cat;
+                }
+            }
+            Instance.Categories = list;
+        }
+
         public static IEnumerable<Category> DefaultCategories = new[]
         {
             new Category

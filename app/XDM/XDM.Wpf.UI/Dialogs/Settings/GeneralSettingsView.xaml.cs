@@ -67,7 +67,7 @@ namespace XDM.Wpf.UI.Dialogs.Settings
             Config.Instance.Categories = new List<Category>(this.categories);
             Config.Instance.FolderSelectionMode = ChkAutoCat.IsChecked.HasValue && ChkAutoCat.IsChecked.Value ?
                 FolderSelectionMode.Auto : FolderSelectionMode.Manual;
-            Config.Instance.DefaultDownloadFolder = TxtDownloadFolder.Text;
+            Config.UpdateDefaultDownloadFolder(TxtDownloadFolder.Text);
             Config.Instance.AllowSystemDarkTheme = ChkDarkTheme.IsChecked ?? false;
             Config.Instance.DoubleClickOpenFile = CmbDblClickAction.SelectedIndex == 1;
         }

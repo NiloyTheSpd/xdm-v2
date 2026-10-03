@@ -70,7 +70,8 @@ export default class RequestWatcher {
             }
         } catch { }
 
-        let mediaType = res.responseHeaders.find(h => h["name"].toUpperCase() === "CONTENT-TYPE");
+        let headers = res.responseHeaders || [];
+        let mediaType = headers.find(h => h["name"].toUpperCase() === "CONTENT-TYPE");
         if (mediaType && this.mediaTypes.find(m => mediaType["value"].indexOf(m) >= 0)) {
             return true;
         }
@@ -79,7 +80,7 @@ export default class RequestWatcher {
             return true;
         }
 
-        let contentDisposition = res.responseHeaders.find(h => h["name"].toUpperCase() === "CONTENT-DISPOSITION");
+        let contentDisposition = headers.find(h => h["name"].toUpperCase() === "CONTENT-DISPOSITION");
         if (contentDisposition && this.fileExts.find(ext => contentDisposition["value"].toUpperCase().indexOf("." + ext) >= 0)) {
             return true;
         }

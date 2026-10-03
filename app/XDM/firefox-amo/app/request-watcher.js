@@ -74,7 +74,8 @@ class RequestWatcher {
             }
         } catch { }
 
-        let mediaType = res.responseHeaders.find(h => h["name"].toUpperCase() === "CONTENT-TYPE");
+        let headers = res.responseHeaders || [];
+        let mediaType = headers.find(h => h["name"].toUpperCase() === "CONTENT-TYPE");
         if (mediaType && this.mediaTypes.find(m => mediaType["value"].indexOf(m) >= 0)) {
             return true;
         }
@@ -109,12 +110,7 @@ class RequestWatcher {
             if (res.url.indexOf("127.0.0.1") >= 0) {
                 return;
             }
-            console.log("analyzing req: ");
-            console.log(req);
-            console.log(res);
-            console.log(this.callback + " " + this.isMatchingRequest(res) + "" + this.statusCallback())
             if (this.callback && this.isMatchingRequest(res) && this.statusCallback()) {
-                console.log("matching req");
                 let intercept = this.shouldIntercept(res);
                 if (req.tabId !== -1) {
                     chrome.tabs.get(
@@ -229,7 +225,8 @@ class RequestWatcher {
             return true;
         }
 
-        let contentDisposition = res.responseHeaders.find(h => h["name"].toUpperCase() === "CONTENT-DISPOSITION");
+        let headers = res.responseHeaders || [];
+        let contentDisposition = headers.find(h => h["name"].toUpperCase() === "CONTENT-DISPOSITION");
         if (contentDisposition && this.fileExts.find(ext => contentDisposition["value"].toUpperCase().indexOf("." + ext) >= 0)) {
             return true;
         }

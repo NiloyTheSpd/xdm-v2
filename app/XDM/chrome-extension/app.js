@@ -34,7 +34,18 @@ export default class App {
     onMessage(msg) {
         this.logger.log("message from XDM");
         this.logger.log(msg);
+        // /sync replies arrive every few seconds AND after every /media and
+        // /tab-update post (the server always appends the full config). Skip the
+        // icon/config refresh when nothing actually changed.
+        let sig = JSON.stringify([msg.enabled, msg.fileExts, msg.blockedHosts,
+            msg.tabsWatcher, msg.videoList, msg.requestFileExts,
+            msg.matchingHosts, msg.mediaTypes, msg.appVersion]);
+        if (sig === this.lastSyncSig) {
+            return;
+        }
+        this.lastSyncSig = sig;
         this.appEnabled = msg.enabled === true;
+        this.appVersion = msg.appVersion;
         this.fileExts = msg.fileExts;
         this.blockedHosts = msg.blockedHosts;
         this.tabsWatcher = msg.tabsWatcher;
@@ -51,6 +62,9 @@ export default class App {
     onDisconnect() {
         this.logger.log("Disconnected from native host!");
         this.logger.log("Disconnected...");
+        // Force a full refresh on the next /sync: otherwise the signature-skip
+        // in onMessage would keep the stale "disconnected" popup after reconnect.
+        this.lastSyncSig = undefined;
         this.updateActionIcon();
     }
 

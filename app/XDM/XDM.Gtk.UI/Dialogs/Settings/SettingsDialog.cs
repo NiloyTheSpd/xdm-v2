@@ -680,7 +680,7 @@ namespace XDM.GtkUI.Dialogs.Settings
             Config.Instance.MaxParallelDownloads = GtkHelper.GetSelectedComboBoxValue<int>(CmbMaxParallalDownloads);
             Config.Instance.Categories = GtkHelper.GetListStoreValues<Category>(categoryStore, 3);
             Config.Instance.FolderSelectionMode = ChkAutoCat.Active ? FolderSelectionMode.Auto : FolderSelectionMode.Manual;
-            Config.Instance.DefaultDownloadFolder = TxtDownloadFolder.Text;
+            Config.UpdateDefaultDownloadFolder(TxtDownloadFolder.Text);
             Config.Instance.AllowSystemDarkTheme = ChkDarkTheme.Active;
             Config.Instance.DoubleClickOpenFile = CmbDblClickAction.Active == 1;
         }
