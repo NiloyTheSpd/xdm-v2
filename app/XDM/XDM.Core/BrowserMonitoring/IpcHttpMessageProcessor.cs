@@ -38,8 +38,19 @@ namespace XDM.Core.BrowserMonitoring
                 }
                 catch (Exception ex)
                 {
+                    // Port 127.0.0.1:8597 is taken (normally a live peer, which the
+                    // SingleInstance handshake already talked to).
+#if NET5_0_OR_GREATER
+                    // Do NOT touch the UI from this background thread on GTK: the
+                    // old ShowMessageBox(null, …) dereferenced a null window
+                    // (NullReferenceException) and killed the process. Browser
+                    // monitoring is degraded, but the downloader itself works,
+                    // so log and continue.
+                    Log.Debug(ex.ToString());
+#else
                     Log.Debug(ex.ToString());
                     ApplicationContext.Application.ShowMessageBox(null, TextResource.GetText("MSG_ALREADY_RUNNING"));
+#endif
                 }
             }).Start();
         }
@@ -285,6 +296,9 @@ namespace XDM.Core.BrowserMonitoring
                 writer.Formatting = Formatting.None;
 
                 writer.WriteStartObject();
+
+                writer.WritePropertyName("appVersion");
+                writer.WriteValue(AppInfo.APP_VERSION);
 
                 writer.WritePropertyName("enabled");
                 writer.WriteValue(Config.Instance.IsBrowserMonitoringEnabled);

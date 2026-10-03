@@ -14,13 +14,13 @@ namespace XDM.GtkUI.Utils
         public static void ShowMessageBox(Window window, string text, string? title = null)
         {
             using var msgBox = new MessageDialog(window, DialogFlags.Modal, MessageType.Info, ButtonsType.Ok, text);
-            msgBox.Title = title ?? window.Title;
-            if (window.Group != null)
+            msgBox.Title = title ?? window?.Title ?? "XDM";
+            if (window?.Group != null)
             {
                 window.Group.AddWindow(msgBox);
             }
             msgBox.Run();
-            if (window.Group != null)
+            if (window?.Group != null)
             {
                 window.Group.RemoveWindow(msgBox);
             }

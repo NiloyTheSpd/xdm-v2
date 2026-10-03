@@ -117,6 +117,34 @@ namespace XDM.GtkUI
 
             ArgsProcessor.Process(args);
 
+            // Register a real Gtk.Application (GApplication) instead of relying on
+            // the legacy static Gtk.Application.Init/Run pair alone. Startup crash
+            // reports on GTK 3.24.51+ implicate GTK window/application plumbing
+            // running without a registered application; giving GTK a registered
+            // application with the main window added is the documented GtkSharp
+            // pattern and removes that failure mode.
+            // This runs AFTER the SingleInstance handshake above on purpose: a
+            // second instance forwards its args over HTTP and exits before ever
+            // touching D-Bus (contacting the bus as a remote instance and then
+            // tearing down segfaults). The main loop intentionally stays on the
+            // static Gtk.Application.Run() (gtk_main): switching to
+            // g_application_run would change quit lifecycle semantics.
+            // NOTE: the ID must be valid D-Bus reverse-DNS ("xdm-app" is rejected
+            // by gtk_application_new); the bus name is cosmetic here since we never
+            // enter g_application_run.
+            var gtkApp = new Gtk.Application("com.xtremedownloadmanager.xdm", GLib.ApplicationFlags.None);
+            try
+            {
+                gtkApp.Register(null);
+                gtkApp.AddWindow(win);
+            }
+            catch (Exception ex)
+            {
+                // No session bus (containers, minimal envs): fall back to the
+                // legacy path rather than failing startup.
+                Log.Debug(ex, "Gtk.Application registration failed, continuing without it");
+            }
+
             Log.Debug("Gtk Run...");
 
             Gtk.Application.Run();
