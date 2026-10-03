@@ -11,6 +11,19 @@ namespace XDM.Core.Util
 {
     public static class PlatformHelper
     {
+        /// <summary>
+        /// Opt-in escape hatch that restores the old "accept any TLS certificate"
+        /// behaviour. Certificates are validated by default; set the environment
+        /// variable XDM_ALLOW_INSECURE_SSL=1 only if you are behind a TLS-intercepting
+        /// corporate proxy and downloads fail with certificate errors.
+        /// This is an environment variable rather than a Config setting on purpose:
+        /// Config is persisted with positional binary serialization (XDM.Core/IO/ConfigIO.cs),
+        /// so inserting a new field would shift every subsequent read and corrupt
+        /// existing settings.dat files.
+        /// </summary>
+        public static bool AllowInsecureSsl =>
+            Environment.GetEnvironmentVariable("XDM_ALLOW_INSECURE_SSL") == "1";
+
         public static bool IsFirstRun()
         {
             var firstRunFile = Path.Combine(Config.AppDir, "xdm-" + AppInfo.APP_VERSION + ".first-run");
